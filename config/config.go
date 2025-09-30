@@ -2,8 +2,9 @@ package config
 
 import (
 	"fmt"
-	"github.com/kelseyhightower/envconfig"
 	"sync"
+
+	"github.com/kelseyhightower/envconfig"
 )
 
 var (
@@ -12,10 +13,9 @@ var (
 )
 
 type Config struct {
-	Port     int `required:"true" default:"3000"`
-	Swagger  Swagger
-	Channels string `required:"true"`
-	Mongo    Mongo
+	Port    int `required:"true" default:"3000"`
+	Swagger Swagger
+	Mongo   Mongo
 }
 
 type Swagger struct {
