@@ -17,8 +17,8 @@ func MockContainer(opts ...Option) *dig.Container {
 	c := dig.New()
 
 	// config
-	envs := config.Get()
-	c.Provide(func() *config.Config { return &envs })
+	envs := config.Load()
+	c.Provide(func() *config.Config { return envs })
 
 	// Services
 	c.Provide(services.NewUsersService)

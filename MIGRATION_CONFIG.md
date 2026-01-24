@@ -168,10 +168,9 @@ mongoURL := cfg.Mongo.Url
 
 **Después:**
 ```go
-cfg, err := config.Load(os.Getenv("APP_ENV"))
-if err != nil {
-    log.Fatal(err)
-}
+// config.Load ya no retorna error - hace panic si falla
+// Lee APP_ENV automáticamente desde las variables de entorno
+cfg := config.Load()
 port := cfg.Server.Port
 mongoURL := cfg.Mongo.URL  // Nota: URL en mayúsculas
 ```
@@ -198,6 +197,7 @@ func NewService() *Service {
 ```go
 func NewService(cfg *config.Config) *Service {
     // Recibir config como parámetro vía dependency injection
+    // Nota: config.Load() lee APP_ENV automáticamente y hace panic si falla
     // ...
 }
 ```

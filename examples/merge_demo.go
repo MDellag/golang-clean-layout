@@ -32,11 +32,9 @@ func main() {
 			os.Setenv("MONGO_DB", "prod_db")
 		}
 
-		cfg, err := config.Load(env)
-		if err != nil {
-			fmt.Printf("❌ Error: %v\n\n", err)
-			continue
-		}
+		// Configurar APP_ENV para este ambiente
+		os.Setenv("APP_ENV", env)
+		cfg := config.Load()
 
 		printConfig(env, cfg)
 		fmt.Println()

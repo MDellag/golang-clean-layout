@@ -24,7 +24,8 @@
       "Bash(git mv:*)",
       "Bash(go run:*)",
       "Bash(move:*)",
-      "Bash(APP_ENV=test go run:*)"
+      "Bash(APP_ENV=test go run:*)",
+      "Bash(APP_ENV=prod DB_HOST=prod.db DB_USERNAME=produser DB_PASSWORD=prodsecret DB_NAME=proddb MONGO_URL=\"mongodb://prod:secret@mongo:27017\" MONGO_DB=proddb go run:*)"
     ]
   }
 }

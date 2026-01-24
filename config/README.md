@@ -10,6 +10,7 @@ Este proyecto usa [Viper](https://github.com/spf13/viper) para gestionar la conf
 - ✅ **Merge parcial**: solo define overrides en archivos de ambiente
 - ✅ Merge inteligente profundo de archivos YAML
 - ✅ Type-safe con structs de Go
+- ✅ **Fail-fast**: Hace panic si la configuración no se puede cargar (la aplicación no puede arrancar sin config válida)
 
 ## Orden de Prioridad
 
@@ -29,7 +30,9 @@ config/
 ├── config_test.yaml      # Solo overrides para testing
 ├── config_prod.yaml      # Solo overrides para producción
 ├── README.md            # Esta documentación
-└── MERGE_STRATEGY.md    # Guía detallada de merge parcial
+├── MERGE_STRATEGY.md    # Guía detallada de merge parcial
+├── BEFORE_AFTER.md      # Comparación visual de merge parcial
+└── PANIC_RATIONALE.md   # Por qué usamos panic en Load()
 ```
 
 **Importante:** Los archivos `config_{env}.yaml` solo contienen valores que quieres sobrescribir. No necesitas repetir toda la configuración en cada archivo. Ver [MERGE_STRATEGY.md](MERGE_STRATEGY.md) para ejemplos detallados.
@@ -50,15 +53,8 @@ import (
 )
 
 func main() {
-    // Leer el ambiente desde variable de entorno
-    // Si APP_ENV no está definida, usa "local" por defecto
-    env := os.Getenv("APP_ENV")
-
-    // Cargar configuración
-    cfg, err := config.Load(env)
-    if err != nil {
-        log.Fatalf("Error cargando configuración: %v", err)
-    }
+    // Cargar configuración (lee APP_ENV automáticamente, hace panic si hay error)
+    cfg := config.Load()
 
     // Usar la configuración
     fmt.Printf("Aplicación: %s\n", cfg.AppName)
@@ -70,26 +66,31 @@ func main() {
 }
 ```
 
+**Nota:** `config.Load()` lee automáticamente la variable de entorno `APP_ENV`. Si no está definida, usa "local" por defecto.
+
+```go
+// En tu shell
+export APP_ENV=prod
+go run cmd/main.go  // Usará config_prod.yaml
+
+// Sin definir APP_ENV
+go run cmd/main.go  // Usará config_local.yaml (default)
+```
+
 ### Seleccionar ambiente
 
-#### Opción 1: Variable de entorno APP_ENV
-
 ```bash
-# Desarrollo local (por defecto)
+# Desarrollo local (por defecto, usa config_local.yaml)
 go run cmd/main.go
 
-# Testing
+# Testing (usa config_test.yaml)
 APP_ENV=test go run cmd/main.go
 
-# Producción
+# Producción (usa config_prod.yaml)
 APP_ENV=prod go run cmd/main.go
 ```
 
-#### Opción 2: Pasar directamente al código
-
-```go
-cfg, err := config.Load("prod")
-```
+**Importante:** `config.Load()` siempre lee la variable de entorno `APP_ENV`. No necesitas pasarla como parámetro.
 
 ## Variables de Entorno
 
@@ -271,12 +272,42 @@ go run cmd/main.go
 
 3. **Usar en tu código**
    ```go
+   cfg := config.Load()  // Lee APP_ENV automáticamente
    redisAddr := fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port)
    ```
 
+## Manejo de Errores
+
+La función `config.Load()` **hace panic** en lugar de retornar error. Esto es intencional:
+
+### ¿Por qué panic?
+
+1. **Fail-fast**: Si la configuración no se puede cargar, la aplicación no puede funcionar
+2. **Simplicidad**: No necesitas manejar errores en cada lugar que usa config
+3. **Startup time**: Los errores de configuración ocurren al inicio, no en runtime
+4. **Claridad**: Un panic con stack trace es más útil que una aplicación en estado inconsistente
+
+```go
+// ✅ Correcto - simple y directo
+cfg := config.Load()  // Lee APP_ENV automáticamente
+
+// ❌ Ya no es necesario
+cfg, err := config.Load(env)
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+Si la configuración falla, verás un panic claro indicando el problema:
+```
+panic: Error leyendo config.yaml: open config/config.yaml: no such file or directory
+```
+
+**Para más detalles sobre por qué usamos panic, ver [PANIC_RATIONALE.md](PANIC_RATIONALE.md)**
+
 ## Troubleshooting
 
-### "Error leyendo config.yaml"
+### Panic: "Error leyendo config.yaml"
 
 El archivo `config.yaml` base es obligatorio. Verifica que existe en el directorio `config/`.
 

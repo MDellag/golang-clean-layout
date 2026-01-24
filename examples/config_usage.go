@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"clean-arq-layout/config"
@@ -21,7 +20,8 @@ import (
 // - SERVER_PORT=9000 go run examples/config_usage.go
 
 func main() {
-	// Obtener ambiente desde variable de entorno
+	// La configuración se carga automáticamente desde APP_ENV
+	// Si APP_ENV no está definida, usa "local" por defecto
 	env := os.Getenv("APP_ENV")
 	if env == "" {
 		env = "local"
@@ -29,11 +29,8 @@ func main() {
 
 	fmt.Printf("=== Cargando configuración para ambiente: %s ===\n\n", env)
 
-	// Cargar configuración
-	cfg, err := config.Load(env)
-	if err != nil {
-		log.Fatalf("Error cargando configuración: %v", err)
-	}
+	// Cargar configuración (lee APP_ENV automáticamente, hace panic si hay error)
+	cfg := config.Load()
 
 	// Mostrar valores cargados
 	fmt.Printf("Aplicación:\n")

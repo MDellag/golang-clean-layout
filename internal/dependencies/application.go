@@ -2,6 +2,7 @@ package dependencies
 
 import (
 	"clean-arq-layout/config"
+	"clean-arq-layout/internal/repositories/memory"
 	"clean-arq-layout/internal/services"
 	"sync"
 
@@ -18,8 +19,10 @@ func Container() *dig.Container {
 		c := dig.New()
 
 		// config
-		envs := config.Get()
-		c.Provide(func() *config.Config { return &envs })
+		envs := config.Load()
+		c.Provide(func() *config.Config { return envs })
+
+		c.Provide(memory.NewUserRepository, dig.As(new(services.UsersRepository)), dig.Name("inMemoryUsersRepository"))
 
 		c.Provide(services.NewUsersService)
 

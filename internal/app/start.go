@@ -10,13 +10,11 @@ import (
 	"log"
 )
 
-func Start(env string) {
+func Start() {
 	container := dig.New()
 
-	// Provide configuration
-	err := container.Provide(func() (*config.Config, error) {
-		return config.Load(env)
-	})
+	// Provide configuration (lee APP_ENV automáticamente)
+	err := container.Provide(config.Load)
 	if err != nil {
 		log.Fatal("Failed to provide config:", err)
 	}

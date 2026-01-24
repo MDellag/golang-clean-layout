@@ -50,10 +50,13 @@ type Mongo struct {
 // 2. config_{env}.yaml (específico del ambiente)
 // 3. config.yaml (base común, mínima prioridad)
 //
-// El parámetro env determina qué archivo específico cargar (local, test, prod).
-// Si env está vacío, se usa "local" por defecto.
-func Load(env string) (*Config, error) {
-	// Usar "local" como ambiente por defecto
+// El ambiente se determina desde la variable de entorno APP_ENV.
+// Si APP_ENV no está definida, se usa "local" por defecto.
+//
+// Si hay algún error cargando la configuración, la función hace panic.
+func Load() *Config {
+	// Leer ambiente desde variable de entorno APP_ENV
+	env := os.Getenv("APP_ENV")
 	if env == "" {
 		env = "local"
 	}
@@ -74,7 +77,7 @@ func Load(env string) (*Config, error) {
 	v.SetConfigType("yaml")
 
 	if err := v.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("error leyendo config.yaml: %w", err)
+		panic(fmt.Sprintf("Error leyendo config.yaml: %v", err))
 	}
 
 	// 2. Hacer merge con config_{env}.yaml (específico del ambiente)
@@ -84,7 +87,7 @@ func Load(env string) (*Config, error) {
 		// Si el archivo específico del ambiente no existe, continuar
 		// (no es crítico, podemos usar solo el base)
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return nil, fmt.Errorf("error leyendo config_%s.yaml: %w", env, err)
+			panic(fmt.Sprintf("Error leyendo config_%s.yaml: %v", env, err))
 		}
 	}
 
@@ -94,10 +97,10 @@ func Load(env string) (*Config, error) {
 	// Deserializar en la estructura Config
 	var cfg Config
 	if err := v.Unmarshal(&cfg); err != nil {
-		return nil, fmt.Errorf("error deserializando configuración: %w", err)
+		panic(fmt.Sprintf("Error deserializando configuración: %v", err))
 	}
 
-	return &cfg, nil
+	return &cfg
 }
 
 // expandEnvVars expande las variables de entorno en todos los valores de configuración
