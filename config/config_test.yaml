@@ -1,0 +1,25 @@
+# Configuración para ambiente de testing
+# Solo sobrescribe valores específicos de config.yaml
+# Los demás valores se heredan de config.yaml
+
+# Log debug para tests
+log_level: "debug"
+
+# Puerto diferente para no chocar con desarrollo
+server:
+  port: 8080
+
+# Base de datos de test
+database:
+  username: "${DB_USERNAME:test_user}"
+  password: "${DB_PASSWORD:test_pass}"
+  name: "${DB_NAME:myapp_test}"
+
+# Deshabilitar swagger en tests
+swagger:
+  enabled: false
+
+# MongoDB de test
+mongo:
+  url: "${MONGO_URL:mongodb://test:test@localhost:27017}"
+  db: "${MONGO_DB:test_db}"

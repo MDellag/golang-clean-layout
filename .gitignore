@@ -2,3 +2,19 @@
 
 # Keep Claude Code configuration - useful for the team!
 # Don't ignore .claude/ or .claude-code/
+
+# Environment files (pueden contener datos sensibles)
+.env
+.env.local
+.env.*.local
+
+# Binarios compilados
+app
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test coverage
+*.out
+coverage.txt

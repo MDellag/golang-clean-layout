@@ -10,13 +10,12 @@ import (
 	"log"
 )
 
-func Start() {
+func Start(env string) {
 	container := dig.New()
 
 	// Provide configuration
-	err := container.Provide(func() *config.Config {
-		cfg := config.Get()
-		return &cfg
+	err := container.Provide(func() (*config.Config, error) {
+		return config.Load(env)
 	})
 	if err != nil {
 		log.Fatal("Failed to provide config:", err)
@@ -24,7 +23,7 @@ func Start() {
 
 	// Provide MongoDB client
 	err = container.Provide(func(cfg *config.Config) (*mongo.Client, error) {
-		return mongo.NewClient(cfg.Mongo.Url, cfg.Mongo.DB)
+		return mongo.NewClient(cfg.Mongo.URL, cfg.Mongo.DB)
 	})
 	if err != nil {
 		log.Fatal("Failed to provide MongoDB client:", err)

@@ -22,7 +22,9 @@
       "Bash(go test:*)",
       "Bash(ls:*)",
       "Bash(git mv:*)",
-      "Bash(go run:*)"
+      "Bash(go run:*)",
+      "Bash(move:*)",
+      "Bash(APP_ENV=test go run:*)"
     ]
   }
 }

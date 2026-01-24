@@ -1,0 +1,10 @@
+# Configuración para desarrollo local
+# Solo sobrescribe valores específicos de config.yaml
+# Los demás valores se heredan de config.yaml
+
+# Aumentar nivel de log para desarrollo
+log_level: "debug"
+
+# Usar localhost específicamente en local
+server:
+  host: "localhost"

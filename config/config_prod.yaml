@@ -1,0 +1,26 @@
+# Configuración para ambiente de producción
+# Solo sobrescribe valores específicos de config.yaml
+# IMPORTANTE: En producción, usar variables de entorno para datos sensibles
+
+# Log level reducido en producción
+log_level: "warn"
+
+# Puerto estándar para producción
+server:
+  port: 8080
+
+# En producción, REQUERIR variables de entorno (sin defaults)
+database:
+  host: "${DB_HOST}"
+  username: "${DB_USERNAME}"
+  password: "${DB_PASSWORD}"
+  name: "${DB_NAME}"
+
+# Deshabilitar swagger en producción
+swagger:
+  enabled: false
+
+# MongoDB sin defaults - REQUERIR variables de entorno
+mongo:
+  url: "${MONGO_URL}"
+  db: "${MONGO_DB}"

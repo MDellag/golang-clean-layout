@@ -1,0 +1,26 @@
+# Configuración base común para todos los ambientes
+# Los valores aquí pueden ser sobrescritos por:
+# 1. Archivos específicos de ambiente (config_local.yaml, config_prod.yaml, etc.)
+# 2. Variables de entorno (máxima prioridad)
+
+app_name: "clean-arq-layout"
+log_level: "info"
+
+server:
+  host: "${SERVER_HOST:0.0.0.0}"
+  port: 3000
+
+database:
+  host: "${DB_HOST:localhost}"
+  port: 5432
+  username: "${DB_USERNAME:postgres}"
+  password: "${DB_PASSWORD:postgres}"
+  name: "${DB_NAME:myapp}"
+
+swagger:
+  hostname: "${SWAGGER_HOSTNAME:localhost}"
+  enabled: true
+
+mongo:
+  url: "${MONGO_URL:mongodb://user:123@localhost:27017}"
+  db: "${MONGO_DB:db}"
