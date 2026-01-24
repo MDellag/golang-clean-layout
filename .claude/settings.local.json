@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(tree:*)",
+      "Bash(go get:*)",
+      "Bash(export GOPROXY=https://proxy.golang.org,direct)",
+      "Bash(go mod tidy:*)",
+      "Bash(export GOSUMDB=off)",
+      "Bash(go list:*)",
+      "Bash(GOSUMDB=off GOPRIVATE=\"\" GOPROXY=https://proxy.golang.org,direct go get:*)",
+      "WebSearch",
+      "Bash(GOSUMDB=off GOPROXY=https://proxy.golang.org,direct go mod tidy:*)",
+      "Bash(GOTOOLCHAIN=local GOSUMDB=off GOPROXY=https://proxy.golang.org,direct go mod download:*)",
+      "Bash(GOTOOLCHAIN=auto GOPROXY=https://proxy.golang.org,direct go mod tidy:*)",
+      "Bash(go env:*)",
+      "Bash(go build:*)",
+      "Bash(GOTOOLCHAIN=local go build:*)",
+      "Bash(go version:*)",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files\\\\Go\\\\bin\\\\go.exe'' version\")",
+      "Bash(grep:*)",
+      "Bash(go test:*)",
+      "Bash(ls:*)",
+      "Bash(git mv:*)",
+      "Bash(go run:*)"
+    ]
+  }
+}

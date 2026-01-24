@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"log"
 	"sync"
+
+	"clean-arq-layout/internal/workers/types"
 )
 
 // Pool maneja un conjunto de workers para procesar jobs
 type Pool struct {
 	workers    []*Worker
-	workerPool chan chan Job
+	workerPool chan chan types.Job
 	maxWorkers int
-	jobQueue   chan Job
+	jobQueue   chan types.Job
 	wg         sync.WaitGroup
 	ctx        context.Context
 	cancel     context.CancelFunc
@@ -26,8 +28,8 @@ func NewWorkerPool(maxWorkers int, jobQueueSize int) *Pool {
 
 	return &Pool{
 		maxWorkers: maxWorkers,
-		workerPool: make(chan chan Job, maxWorkers),
-		jobQueue:   make(chan Job, jobQueueSize),
+		workerPool: make(chan chan types.Job, maxWorkers),
+		jobQueue:   make(chan types.Job, jobQueueSize),
 		workers:    make([]*Worker, 0, maxWorkers),
 		ctx:        ctx,
 		cancel:     cancel,
@@ -43,15 +45,23 @@ func (p *Pool) Start() error {
 		return fmt.Errorf("worker pool already started")
 	}
 
-	// Inicializar y arrancar los workers usando waitgroup.Go
+	// Initialize and start workers
 	for i := 0; i < p.maxWorkers; i++ {
 		worker := NewWorker(i, p.workerPool, p.ctx)
 		p.workers = append(p.workers, worker)
-		p.wg.Go(worker.run)
+		p.wg.Add(1)
+		go func(w *Worker) {
+			defer p.wg.Done()
+			w.run()
+		}(worker)
 	}
 
-	// Iniciar el distribuidor de trabajos usando waitgroup.Go
-	p.wg.Go(p.dispatch)
+	// Start job dispatcher
+	p.wg.Add(1)
+	go func() {
+		defer p.wg.Done()
+		p.dispatch()
+	}()
 
 	p.started = true
 	log.Printf("Worker pool started with %d workers", p.maxWorkers)
@@ -86,7 +96,7 @@ func (p *Pool) dispatch() {
 }
 
 // Submit encola un nuevo trabajo para ser procesado
-func (p *Pool) Submit(job Job) error {
+func (p *Pool) Submit(job types.Job) error {
 	if !p.started {
 		return fmt.Errorf("worker pool not started")
 	}

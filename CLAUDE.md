@@ -23,6 +23,7 @@ go test -v ./tests/e2e/         # Run end-to-end tests
 ```bash
 go vet ./...     # Static analysis
 go fmt ./...     # Format code
+./scripts/validate_architecture.sh  # Validate Clean Architecture rules
 ```
 
 ## Architecture Overview
@@ -87,11 +88,47 @@ This is a **Clean Architecture** Go application following Domain-Driven Design p
 
 Application starts in `cmd/main.go` which calls `internal/app/start.go`. The start function is currently empty and needs implementation for dependency injection and service initialization.
 
+## Claude Code Skills
+
+This project includes custom Claude Code skills to enforce architecture standards:
+
+### `/clean-arch` - Clean Architecture Enforcer
+
+**Use this skill when:**
+- Creating new files or folders
+- Refactoring existing code
+- Planning new features
+- Unsure where code should live
+- Reviewing code changes
+
+**What it does:**
+- Validates file placement according to Clean Architecture
+- Prevents architectural violations
+- Suggests proper structure for new features
+- Provides code templates following project conventions
+- Ensures separation of concerns
+
+**Quick reference:**
+```bash
+/clean-arch                    # General guidance
+/clean-arch [your question]    # Specific guidance
+```
+
+**Documentation:**
+- Skill location: `.claude/skills/clean-arch/SKILL.md`
+- Quick reference: `.claude/skills/clean-arch/reference.md`
+- Practical examples: `.claude/skills/clean-arch/examples.md`
+- Additional docs: `.claude-code/skills/` (detailed guides)
+
 ## Development Notes
 
+- **ALWAYS use `/clean-arch` skill** when creating new code or modifying architecture
 - Repository implementations should satisfy interfaces in `internal/domain/interfaces/`
 - New entities go in `internal/domain/entity/` with behavior methods
 - Business logic belongs in `internal/services/`, not in handlers or repositories
+- Use mappers in `internal/repositories/{db}/mappers/` to convert DB models ↔ Domain entities
+- Never put database tags in domain entities - use separate models in `repositories/{db}/models/`
 - Use the existing worker system for async operations
 - Configuration follows environment variable pattern with defaults
 - All external dependencies are abstracted through interfaces for testability
+- Follow dependency flow: Delivery → Services → Repositories → Domain (never reverse!)

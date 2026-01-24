@@ -12,8 +12,8 @@ import (
 // Worker representa un trabajador individual que procesa jobs
 type Worker struct {
 	ID         int
-	jobChannel chan Job
-	workerPool chan chan Job
+	jobChannel chan types.Job
+	workerPool chan chan types.Job
 	ctx        context.Context
 	metrics    *WorkerMetrics
 }
@@ -26,10 +26,10 @@ type WorkerMetrics struct {
 }
 
 // NewWorker crea un nuevo worker
-func NewWorker(id int, workerPool chan chan Job, ctx context.Context) *Worker {
+func NewWorker(id int, workerPool chan chan types.Job, ctx context.Context) *Worker {
 	return &Worker{
 		ID:         id,
-		jobChannel: make(chan Job),
+		jobChannel: make(chan types.Job),
 		workerPool: workerPool,
 		ctx:        ctx,
 		metrics:    &WorkerMetrics{},
@@ -62,7 +62,7 @@ func (w *Worker) run() {
 }
 
 // processJob procesa un trabajo individual
-func (w *Worker) processJob(job Job) {
+func (w *Worker) processJob(job types.Job) {
 	log.Printf("Worker %d processing job: %s", w.ID, job.Name())
 
 	startTime := time.Now()
@@ -76,27 +76,6 @@ func (w *Worker) processJob(job Job) {
 
 	duration := time.Since(startTime)
 	w.metrics.LastJobTime = duration
-
-	// Si el job implementa JobWithResponse, enviar el resultado
-	if jobWithResponse, ok := job.(types.JobWithResponse); ok {
-		result := types.JobResult{
-			JobID:     jobWithResponse.ID(),
-			JobName:   job.Name(),
-			Success:   err == nil,
-			Error:     err,
-			Duration:  duration,
-			Timestamp: time.Now(),
-		}
-
-		// Intentar enviar resultado al canal
-		select {
-		case jobWithResponse.ResponseChannel() <- result:
-			// Resultado enviado exitosamente
-		default:
-			// Canal lleno o cerrado, log de advertencia
-			log.Printf("Worker %d: failed to send result for job %s", w.ID, job.Name())
-		}
-	}
 
 	if err != nil {
 		log.Printf("Worker %d error processing job %s: %v", w.ID, job.Name(), err)

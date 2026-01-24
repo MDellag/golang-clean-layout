@@ -1,1 +1,4 @@
 .idea
+
+# Keep Claude Code configuration - useful for the team!
+# Don't ignore .claude/ or .claude-code/
