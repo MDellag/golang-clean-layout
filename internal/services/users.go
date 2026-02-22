@@ -5,8 +5,9 @@ import (
 	"clean-arq-layout/internal/domain/dto/response"
 	"clean-arq-layout/internal/domain/entity"
 	"context"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type UsersRepository interface {
