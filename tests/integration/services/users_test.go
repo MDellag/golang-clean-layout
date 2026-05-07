@@ -9,12 +9,11 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/dig"
+	"go.uber.org/fx"
 )
 
-func WithUsersRepository() dependencies.Option {
+func TestFindByEmail(t *testing.T) {
 	usersRepo := new(mocks.UsersRepository)
-
 	usersRepo.On("FindByUsername", "test-user-1").Return(&entity.User{
 		ID:       uuid.New(),
 		Name:     "test-user-1",
@@ -22,26 +21,14 @@ func WithUsersRepository() dependencies.Option {
 		Password: "123",
 	}, nil)
 
-	return func(c *dig.Container) error {
-		return c.Provide(func() services.UsersRepository {
-			return usersRepo
-		})
-	}
-}
-
-func TestFindByEmail(t *testing.T) {
-	container := dependencies.MockContainer(WithUsersRepository())
-
-	container.Invoke(func(
-		usersService services.UsersService,
-	) {
-		testUser, err := usersService.FindByUsername("test-user-1")
-		if err != nil {
-			t.Error(err)
-		}
-
-		assert.Equal(t, "test-user-1", testUser.Name)
-		assert.Equal(t, "test-user@mail.com", testUser.Email)
-	})
-
+	dependencies.MockApp(t,
+		fx.Provide(func() services.UsersRepository { return usersRepo }),
+		fx.Provide(services.NewUsersService),
+		fx.Invoke(func(svc *services.UsersService) {
+			testUser, err := svc.FindByUsername("test-user-1")
+			assert.NoError(t, err)
+			assert.Equal(t, "test-user-1", testUser.Name)
+			assert.Equal(t, "test-user@mail.com", testUser.Email)
+		}),
+	).RequireStart().RequireStop()
 }

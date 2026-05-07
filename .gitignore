@@ -9,7 +9,7 @@
 .env.*.local
 
 # Binarios compilados
-app
+/app
 *.exe
 *.dll
 *.so
