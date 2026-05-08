@@ -2,13 +2,14 @@ package modules
 
 import (
 	"clean-arq-layout/config"
-	grpcDelivery "clean-arq-layout/internal/delivery/grpc"
-	"clean-arq-layout/internal/domain/interfaces"
+	httpRouter "clean-arq-layout/internal/delivery/http"
+	"clean-arq-layout/internal/delivery/http/handlers"
 	"context"
 	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 )
 
@@ -17,24 +18,13 @@ type HTTPServer struct {
 	server *http.Server
 }
 
-func newHTTPServer(cfg *config.Config, userService interfaces.UserService) *HTTPServer {
-	handler := grpcDelivery.NewSimpleUserHandler(userService)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
-			handler.CreateUser(w, r)
-		case http.MethodGet:
-			handler.GetUser(w, r)
-		default:
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+func newHTTPServer(cfg *config.Config, usersHandler *handlers.UsersHandler) *HTTPServer {
+	engine := gin.Default()
+	httpRouter.Init(engine, usersHandler)
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	return &HTTPServer{
-		server: &http.Server{Addr: addr, Handler: mux},
+		server: &http.Server{Addr: addr, Handler: engine},
 	}
 }
 
@@ -57,6 +47,9 @@ func registerLifecycle(lc fx.Lifecycle, s *HTTPServer) {
 }
 
 var ServerModule = fx.Module("server",
-	fx.Provide(newHTTPServer),
+	fx.Provide(
+		handlers.NewUsersHandler,
+		newHTTPServer,
+	),
 	fx.Invoke(registerLifecycle),
 )
